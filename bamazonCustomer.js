@@ -10,12 +10,29 @@ var connection = mysql.createConnection({
   user: "root",
 
   // Your password
-  password: "",
-  database: "ice_creamDB"
+  password: "root",
+  database: "amazon"
 });
 
-connection.connect(function(err) {
-  if (err) throw err;
-  console.log("connected as id " + connection.threadId);
-  connection.end();
+connection.connect(function (error) {
+    if (error !== null) {
+        throw new Error("Can't connect", error.message);
+    } else {
+        console.log('Connected to dataBase at ' + connection.threadId);
+        afterConnection();
+    }
 });
+
+function afterConnection() {
+
+    connection.query('Select * FROM songs', function (error, result) {
+        if (error) {
+            throw new Error('UnaBle to query the DB', error.message);
+        } else {
+            console.log(result);
+        }
+
+        connection.end();
+    });
+
+}
