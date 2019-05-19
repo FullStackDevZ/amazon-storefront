@@ -15,6 +15,6 @@ CREATE TABLE products (
 );
 
 INSERT INTO products (item_id, product_name, department_name, price, stock_quantity)
-VALUES (334568, "Maple Syrup", "Food", 2.00, 200),
-(334569, "Trapper Keeper", "Stationary", 3.99, 197),
+VALUES (33568, "Maple Syrup", "Food", 2.00, 200),
+(33569, "Trapper Keeper", "Stationary", 3.99, 197),
 (33570, "Cascade Detergent", "Home", 7.99, 193);

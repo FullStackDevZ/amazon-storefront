@@ -1,5 +1,6 @@
 var mysql = require("mysql");
 var inquirer = require("inquirer");
+var Table = require("cli-table");
 
 var connection = mysql.createConnection({
     host: "localhost",
@@ -18,68 +19,71 @@ var connection = mysql.createConnection({
 connection.connect(function (err) {
     if (err) throw err;
     console.log("connected as id " + connection.threadId + "\n");
-    startScreen()
-
-    // checkStock()
-    // connection.end()
+    showProducts()
+ 
 })
 
-function startScreen() {
+var showProducts = function () {
     console.log("Here are our products: \n");
-    connection.query(
-        "SELECT * FROM products", function (err, res) {
+    var query = "Select * FROM products";
+    connection.query(query, function (err, res) {
+        {
             if (err) throw err;
-            console.log(res);
+
+            var displayTable = new Table({
+                head: ["Item ID", "Product Name", "Department", "Price", "Qty"],
+                colWidths: [10, 20, 20, 8, 12]
+            });
+            for (var i = 0; i < res.length; i++) {
+                displayTable.push(
+                    [res[i].item_id, res[i].product_name, res[i].department_name, res[i].price, res[i].stock_quantity]
+                );
+            }
+            console.log(displayTable.toString());
             // connection.end();
-            inquirer
-                .prompt([
+            inquirer.prompt([
                     {
                         name: "item",
                         type: "input",
-                        message: "Please pick a product using it's Item Id.",
+                        message: "Please pick a product using it's Item Id. \n",
                         validate: function (value) {
                             if (isNaN(value) === false) {
                                 return true;
                             }
                             return false;
                         }
-
+                    },
+                    {
+                        name: "Quantity",
+                        type: "input",
+                        message: "How many would you like to purchase?",
+                        filter: Number
                     }
-                ])
-            // .then(function (answer) {
-            //     var chosenItem;
-            //     for (var i = 0; i < results.length; i++) {
-            //         if (results[i].item_name === answer.choice) {
-            //             chosenItem = results[i];
-            //         }
-            //     }
-            // }}
+                ]).then(function(answers){
+                    var stockLeft = answers.Quantity;
+                    var itemID = answers.item;
+                    orderOutput(itemID, stockLeft);
+                });
+        }
 
-            // )
-        })
+    });
+}
+// Tells the customer if there is enough product to order
+// If there is enough there total is calculated and outputed
+function orderOutput(item, numOrdered){
+	connection.query('Select * FROM products WHERE item_id = ' + item, function(err,res){
+		if(err){console.log(err)};
+		if(numOrdered <= res[0].stock_quantity){
+			var finalPrice = res[0].price * numOrdered;
+            
+            console.log("Your total cost for " + numOrdered + " " + res[0].product_name + "(s)" + " is " + "$" + finalPrice + "\n");
+
+			connection.query("UPDATE products SET stock_quantity = stock_quantity - " + numOrdered + "WHERE item_id = " + item);
+		} else{
+			console.log("Insufficient quantity of " + res[0].product_name + "to complete your order.");
+		};
+		
+    });
+};
 
 
-    // function checkStock() {
-    //     // query the database for all items being auctioned
-    //     connection.query("SELECT * FROM products", function (err, results) {
-    //         if (err) throw err;
-    //         // once you have the items, prompt the user for which they'd like to bid on
-    //         inquirer
-    //             .prompt([
-    //                 {
-    //                     name: "choice",
-    //                     type: "input",
-    //                     choices: function () {
-    //                         var choiceArray = [];
-    //                         for (var i = 0; i < results.length; i++) {
-    //                             choiceArray.push(results[i].item_id);
-    //                         }
-    //                         return choiceArray;
-    //                     },
-    //                     message: "You chose" + item_id + product_name + "/n",
-    //                     message: "How many would you like?"
-    //                 },
-
-    //             ])
-
-    //     }
