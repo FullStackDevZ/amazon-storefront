@@ -20,7 +20,7 @@ connection.connect(function (err) {
     if (err) throw err;
     console.log("connected as id " + connection.threadId + "\n");
     showProducts()
- 
+
 })
 
 var showProducts = function () {
@@ -42,47 +42,52 @@ var showProducts = function () {
             console.log(displayTable.toString());
             // connection.end();
             inquirer.prompt([
-                    {
-                        name: "item",
-                        type: "input",
-                        message: "\n Please pick a product using it's Item Id. ",
-                        validate: function (value) {
-                            if (isNaN(value) === false) {
-                                return true;
-                            }
-                            return false;
+                {
+                    name: "item",
+                    type: "input",
+                    message: "\n Please pick a product using it's Item Id. ",
+                    validate: function (value) {
+                        if (isNaN(value) === false) {
+                            return true;
                         }
-                    },
-                    {
-                        name: "Quantity",
-                        type: "input",
-                        message: "\n How many would you like to purchase?",
-                        filter: Number
+                        return false;
                     }
-                ]).then(function(answers){
-                    var stockLeft = answers.Quantity;
-                    var itemID = answers.item;
-                    orderOutput(itemID, stockLeft);
-                });
+                },
+                {
+                    name: "Quantity",
+                    type: "input",
+                    message: "\n How many would you like to purchase?",
+                    filter: Number
+                }
+            ]).then(function (answers) {
+                var stockLeft = answers.Quantity;
+                var itemID = answers.item;
+                orderOutput(itemID, stockLeft);
+            });
         }
 
     });
 }
 // Tells the customer if there is enough product to order
 // If there is enough there total is calculated and outputed
-function orderOutput(item, numOrdered){
-	connection.query('Select * FROM products WHERE item_id =' + item, function(err,res){
-		if(err){console.log(err)};
-		if(numOrdered <= res[0].stock_quantity){
-			var finalPrice = res[0].price * numOrdered;
-            
+function orderOutput(item, numOrdered) {
+    connection.query('Select * FROM products WHERE item_id =' + item, function (err, res) {
+        if (err) { console.log(err) };
+        if (numOrdered <= res[0].stock_quantity) {
+            // calculates the final cost of the order
+            // calculates the num of items left in stock after the purchase
+            var finalPrice = res[0].price * numOrdered;
+            var itemsLeft = res[0].stock_quantity - numOrdered;
+
             console.log("\n Your total cost for " + numOrdered + " " + res[0].product_name + "(s)" + " is " + "$" + finalPrice + "\n");
 
-			connection.query("UPDATE products SET stock_quantity = stock_quantity - " + numOrdered + "WHERE item_id = " + item);
-		} else{
-			console.log("Insufficient quantity of " + res[0].product_name + "to complete your order.");
-		};
-		
+            connection.query("UPDATE products SET stock_quantity = stock_quantity - " + numOrdered + "WHERE item_id = " + item);
+
+            console.log("\n There are " +  itemsLeft + " " + res[0].product_name + "(s)" + " " + "left in stock." + "\n");
+        } else {
+            console.log("Insufficient quantity of " + res[0].product_name + "to complete your order.");
+        };
+
     });
 };
 
