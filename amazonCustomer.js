@@ -32,7 +32,7 @@ var showProducts = function () {
 
             var displayTable = new Table({
                 head: ["Item ID", "Product Name", "Department", "Price", "Qty"],
-                colWidths: [10, 20, 20, 8, 12]
+                colWidths: [10, 25, 20, 8, 12]
             });
             for (var i = 0; i < res.length; i++) {
                 displayTable.push(
@@ -45,7 +45,7 @@ var showProducts = function () {
                     {
                         name: "item",
                         type: "input",
-                        message: "Please pick a product using it's Item Id. \n",
+                        message: "\n Please pick a product using it's Item Id. ",
                         validate: function (value) {
                             if (isNaN(value) === false) {
                                 return true;
@@ -56,7 +56,7 @@ var showProducts = function () {
                     {
                         name: "Quantity",
                         type: "input",
-                        message: "How many would you like to purchase?",
+                        message: "\n How many would you like to purchase?",
                         filter: Number
                     }
                 ]).then(function(answers){
@@ -71,12 +71,12 @@ var showProducts = function () {
 // Tells the customer if there is enough product to order
 // If there is enough there total is calculated and outputed
 function orderOutput(item, numOrdered){
-	connection.query('Select * FROM products WHERE item_id = ' + item, function(err,res){
+	connection.query('Select * FROM products WHERE item_id =' + item, function(err,res){
 		if(err){console.log(err)};
 		if(numOrdered <= res[0].stock_quantity){
 			var finalPrice = res[0].price * numOrdered;
             
-            console.log("Your total cost for " + numOrdered + " " + res[0].product_name + "(s)" + " is " + "$" + finalPrice + "\n");
+            console.log("\n Your total cost for " + numOrdered + " " + res[0].product_name + "(s)" + " is " + "$" + finalPrice + "\n");
 
 			connection.query("UPDATE products SET stock_quantity = stock_quantity - " + numOrdered + "WHERE item_id = " + item);
 		} else{
